@@ -20,19 +20,27 @@
 
 #include <string>
 
-#include <opencv2/opencv.hpp>
-
 #include "discpp.h"
+
+#include <vector>
 
 using namespace std;
 
 namespace frenet_transform {
+    
+class Point2d {
+public:
+    Point2d(double x = 0, double y = 0): 
+                x(x), y(y) {}
+    
+    double x, y;
+};
 
 class FrenetPlotter
 {
 public:
     FrenetPlotter(const string & title);
-    void plot(const vector <cv::Point2d> & points, const string & color);
+    void plot(const vector <Point2d> & points, const string & color);
     void waitForButton();
     
 private:

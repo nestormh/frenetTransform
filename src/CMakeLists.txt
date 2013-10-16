@@ -6,7 +6,7 @@ include_directories(testFrenet
 #     GPULibSVM
 #     ${EIGEN3_INCLUDE_DIR}
 #     ${PCL_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIR}
+#     ${OpenCV_INCLUDE_DIR}
 #     ${Boost_INCLUDE_DIR}
 #     emon.a
 #     ${CUDA_INCLUDE_DIRS}
@@ -20,7 +20,7 @@ link_directories(testFrenet
 target_link_libraries(testFrenet
 #   ${EIGEN3_LIBRARIES}
 #   ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
+#   ${OpenCV_LIBS}
 #   ${CUDA_LIBRARIES}
 #   ${Boost_LIBRARIES}
 #   ${PROTOBUF_LIBRARIES}

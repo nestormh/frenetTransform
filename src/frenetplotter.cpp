@@ -57,14 +57,14 @@ FrenetPlotter::FrenetPlotter(const string & title)
     g.title  ();
 }
 
-void FrenetPlotter::plot(const vector< cv::Point2d >& points, const string & color)
+void FrenetPlotter::plot(const vector< Point2d >& points, const string & color)
 {
     float xray[points.size()];
     float yray[points.size()];
     
     {
-        uint32_t i = 0;
-        for (vector <cv::Point2d>::const_iterator it = points.begin(); it != points.end(); it++, i++) {
+        int i = 0;
+        for (vector <Point2d>::const_iterator it = points.begin(); it != points.end(); it++, i++) {
             xray[i] = it->x;
             yray[i] = it->y;
         }

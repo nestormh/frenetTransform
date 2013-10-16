@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
+#include <math.h>
 
 #include "frenetplotter.h"
 
@@ -8,7 +9,7 @@ using namespace std;
 
 int main(int argC, char * argV[]) {
     
-    vector <cv::Point2d> sinFunc, cosFunc;    
+    vector <frenet_transform::Point2d> sinFunc, cosFunc;    
     {
         const unsigned int n = 100;
         sinFunc.resize(n);
@@ -17,13 +18,13 @@ int main(int argC, char * argV[]) {
         const double fpi = 3.1415926 / 180.0;
         const double step = 360. / (n - 1);
     
-        for (uint32_t i = 0; i < n; i++) {   
+        for (int i = 0; i < n; i++) {   
             
             const double xRay = i * step;
             const double x = xRay * fpi;
             
-            sinFunc[i] = cv::Point2d(xRay, sin(x));
-            cosFunc[i] = cv::Point2d(xRay, cos(x));
+            sinFunc[i] = frenet_transform::Point2d(xRay, sin(x));
+            cosFunc[i] = frenet_transform::Point2d(xRay, cos(x));
         }
     }
   
