@@ -34,7 +34,8 @@ FrenetPlotter::FrenetPlotter(const string & title)
     g.pagera ();
     g.complx ();
     g.axspos (450, 1800);
-    g.axslen (2200, 1200);
+//     g.axslen (2200, 1200);
+    g.axslen (1200, 1200);
 
     g.name   ("X-axis", "x");
     g.name   ("Y-axis", "y");
@@ -47,14 +48,6 @@ FrenetPlotter::FrenetPlotter(const string & title)
 
     int ic=g.intrgb (0.95,0.95,0.95);
     g.axsbgd (ic);
-
-    g.graf   (0.0, 360.0, 0.0, 90.0, -1.0, 1.0, -1.0, 0.5);
-    g.setrgb (0.7, 0.7, 0.7);
-    g.grid   (1, 1);
-
-    g.color  ("fore");
-    g.height (50);
-    g.title  ();
 }
 
 void FrenetPlotter::plot(const vector< Point2d >& points, const string & color)
@@ -74,6 +67,18 @@ void FrenetPlotter::plot(const vector< Point2d >& points, const string & color)
     g.curve  (xray, yray, points.size());
 }
 
+void FrenetPlotter::setAxis(const double & xStart, const double & xEnd, const double & xOrigin, const double & xStep,
+                            const double & yStart, const double & yEnd, const double & yOrigin, const double & yStep) {
+    
+    g.graf(xStart, xEnd, xOrigin, xStep, yStart, yEnd, yOrigin, yStep);
+    
+    g.setrgb (0.7, 0.7, 0.7);
+    g.grid   (1, 1);
+    
+    g.color  ("fore");
+    g.height (50);
+    g.title  ();
+}
 
 
 void FrenetPlotter::waitForButton()

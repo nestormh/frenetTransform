@@ -19,12 +19,50 @@
 #ifndef FRENETTRANSFORM_H
 #define FRENETTRANSFORM_H
 
+#include "geometry_msgs/PoseStamped.h"
+
+#include <grull_ackermann_base_local_planner/trajectory.h>
+
+#include "eigen3/Eigen/Core"
+
+using namespace std;
+using namespace grull_ackermann_base_local_planner;
+
+namespace frenet_transform {
+    
 class FrenetTransform
 {
 
 public:
     FrenetTransform();
+    
+    void setGlobalPlan(const std::vector<geometry_msgs::PoseStamped> & global_plan);
+    
+    void generatePaths();
+    
+    void generatePath(const double& qf, const double & s_total, const double & si, const double & sf, 
+                      const double & qi, const double & theta, std::vector <double> & q);
+    
+    void transformPaths(const uint32_t & idxGlobal, const double & s_total);
+    
     virtual ~FrenetTransform();
+private:
+    void plotPaths(const vector < vector< double > >& path);
+    void plotTransformedPaths();
+    
+    vector<geometry_msgs::PoseStamped> m_global_plan;
+    
+    double m_pathResolution;
+    double m_distBetweenPaths;
+    double m_qMax;
+    
+    uint32_t m_idxForTangent;
+    
+    vector < vector < double > > m_pathList;
+    vector<Trajectory> m_transformedPaths;
+    
 };
+
+}
 
 #endif // FRENETTRANSFORM_H

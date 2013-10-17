@@ -23,6 +23,7 @@
 #include "discpp.h"
 
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -33,6 +34,13 @@ public:
     Point2d(double x = 0, double y = 0): 
                 x(x), y(y) {}
     
+    double norm() { return sqrt(x * x + y * y); }
+    double normalize() {  
+        const double module = norm();
+        x /= module;
+        y /= module;
+    }
+    
     double x, y;
 };
 
@@ -40,6 +48,8 @@ class FrenetPlotter
 {
 public:
     FrenetPlotter(const string & title);
+    void setAxis(const double & xStart, const double & xEnd, const double & xOrigin, const double & xStep,
+                 const double & yStart, const double & yEnd, const double & yOrigin, const double & yStep);
     void plot(const vector <Point2d> & points, const string & color);
     void waitForButton();
     

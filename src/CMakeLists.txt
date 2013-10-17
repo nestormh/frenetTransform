@@ -1,16 +1,19 @@
 add_executable(testFrenet frenettransform.cpp frenetplotter.cpp 
+    /home/nestor/Dropbox/ros/hydro/ull-isaatc/src/grull_ackermann_base_local_planner/src/trajectory.cpp
     main.cpp 
 )
   
 include_directories(testFrenet
 #     GPULibSVM
-#     ${EIGEN3_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
 #     ${PCL_INCLUDE_DIRS}
 #     ${OpenCV_INCLUDE_DIR}
 #     ${Boost_INCLUDE_DIR}
 #     emon.a
 #     ${CUDA_INCLUDE_DIRS}
     /usr/local/dislin
+    /opt/ros/hydro/include
+    /home/nestor/Dropbox/ros/hydro/ull-isaatc/src/grull_ackermann_base_local_planner/include/
 )
 
 link_directories(testFrenet
@@ -18,7 +21,7 @@ link_directories(testFrenet
 )
 
 target_link_libraries(testFrenet
-#   ${EIGEN3_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
 #   ${PCL_LIBRARIES}
 #   ${OpenCV_LIBS}
 #   ${CUDA_LIBRARIES}
