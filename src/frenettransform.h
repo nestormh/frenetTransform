@@ -30,23 +30,55 @@ using namespace grull_ackermann_base_local_planner;
 
 namespace frenet_transform {
     
+class Point2d {
+public:
+    Point2d(double x = 0, double y = 0): 
+    x(x), y(y) {}
+    
+    double norm() { return sqrt(x * x + y * y); }
+    double normalize() {  
+        const double module = norm();
+        x /= module;
+        y /= module;
+    }
+    
+    double x, y;
+};
+    
 class FrenetTransform
 {
 
 public:
-    FrenetTransform();
+    FrenetTransform(const double & pathResolution, const double & distBetweenPaths, 
+                    const double & qMax, const double & sf, const double & sTotal, 
+                    const double idxForTangent = 5);
+    
+    FrenetTransform(const double & maxDist, const double & maxWide, const double & evolutionDist,
+                    const uint32_t & numPaths, const uint32_t & numSteps,
+                    const uint32_t idxForTangent = 5);
+    
+    void initialize(const double & pathResolution, const double & distBetweenPaths, 
+                    const double & qMax, const double & sf, const double & sTotal, 
+                    const uint32_t & idxForTangent);
+    
+    void initialize(const double & maxDist, const double & maxWide, const double & evolutionDist,
+                    const uint32_t & numPaths, const uint32_t & numSteps,
+                    const uint32_t & idxForTangent);
     
     void setGlobalPlan(const std::vector<geometry_msgs::PoseStamped> & global_plan);
     
-    void generatePaths();
+    void generatePaths(const double & si, const double & qi, 
+                       const double & theta, const uint32_t & idxGlobal);
     
-    void generatePath(const double& qf, const double & s_total, const double & si, const double & sf, 
-                      const double & qi, const double & theta, std::vector <double> & q);
-    
-    void transformPaths(const uint32_t & idxGlobal, const double & s_total);
+    vector<Trajectory> getGeneratedPaths() { return m_transformedPaths; }
     
     virtual ~FrenetTransform();
 private:
+    void generatePath(const double& qf, const double & si, 
+                      const double & qi, const double & theta, std::vector <double> & q);
+    
+    void transformPaths(const uint32_t & idxGlobal);
+    
     void plotPaths(const vector < vector< double > >& path);
     void plotTransformedPaths();
     
@@ -55,6 +87,9 @@ private:
     double m_pathResolution;
     double m_distBetweenPaths;
     double m_qMax;
+    
+    double m_sTotal;
+    double m_sf;
     
     uint32_t m_idxForTangent;
     

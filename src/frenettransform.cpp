@@ -31,12 +31,54 @@ using namespace std;
 namespace frenet_transform {
     
     
-FrenetTransform::FrenetTransform()
+FrenetTransform::FrenetTransform(const double & pathResolution, const double & distBetweenPaths, 
+                                 const double & qMax, const double & sf, const double & sTotal, 
+                                 const double idxForTangent)
 {
-    m_pathResolution = 0.1f;
-    m_distBetweenPaths = 0.05f;
-    m_qMax = 5;
-    m_idxForTangent = 5;
+    initialize(pathResolution, distBetweenPaths, qMax, sf, sTotal, idxForTangent);
+}
+
+FrenetTransform::FrenetTransform(const double & maxDist, const double & maxWide, const double & evolutionDist,
+                                 const uint32_t & numPaths, const uint32_t & numSteps,
+                                 const uint32_t idxForTangent)
+{
+    initialize(maxDist, maxWide, evolutionDist, numPaths, numSteps, idxForTangent);
+}
+    
+
+void FrenetTransform::initialize(const double & pathResolution, const double & distBetweenPaths, 
+                                 const double & qMax, const double & sf, const double & sTotal, 
+                                 const uint32_t & idxForTangent)
+{
+    m_pathResolution = pathResolution;
+    m_distBetweenPaths = distBetweenPaths;
+    m_qMax = qMax;
+    m_idxForTangent = idxForTangent;
+    m_sTotal = sTotal;
+    m_sf = sf;
+}
+
+void FrenetTransform::initialize(const double & maxDist, const double & maxWide, const double & evolutionDist,
+                                 const uint32_t & numPaths, const uint32_t & numSteps,
+                                 const uint32_t & idxForTangent)
+{
+    m_sTotal = maxDist;
+    m_pathResolution = maxDist / numSteps;
+    
+    m_qMax = maxWide / 2.0;
+    m_distBetweenPaths = maxWide / numPaths;
+
+    
+    m_idxForTangent = idxForTangent;
+    m_sf = evolutionDist;
+    
+    cout << "m_sTotal " << m_sTotal << endl;
+    cout << "m_pathResolution " << m_pathResolution << endl;
+    cout << "m_qMax " << m_qMax << endl;
+    cout << "m_distBetweenPaths " << m_distBetweenPaths << endl;
+    cout << "m_idxForTangent " << m_idxForTangent << endl;
+    cout << "m_sf " << m_sf << endl;
+    
 }
 
 FrenetTransform::~FrenetTransform()
@@ -44,9 +86,8 @@ FrenetTransform::~FrenetTransform()
 
 }
 
-// TODO: Poner resolucion y distancia en funcion del area que se quiere cubrir
-
-void FrenetTransform::generatePaths()
+void FrenetTransform::generatePaths(const double & si, const double & qi, 
+                                    const double & theta, const uint32_t & idxGlobal)
 {
     struct timeval start, end;
     
@@ -54,22 +95,15 @@ void FrenetTransform::generatePaths()
     
     gettimeofday(&start, NULL);     
     
-    double s_total = 20;
-    double si = 0;
-    double sf = 5;
-    double qi = 0;
-    double theta = 0.0f;
-    
     m_pathList.resize(2 * m_qMax / m_distBetweenPaths + 1);
     
     uint32_t i = 0;
     for (double qf = -m_qMax; qf <= m_qMax /*i < m_pathList.size()*/; qf += m_distBetweenPaths, i++) {
-        generatePath(qf, s_total, si, sf, qi, theta, m_pathList[i]);
+        cout << i << endl;
+        generatePath(qf, si, qi, theta, m_pathList[i]);
     }
     
-    transformPaths(0, s_total);
-    
-    sleep(2);
+    transformPaths(idxGlobal);
     
     gettimeofday(&end, NULL);
     
@@ -84,53 +118,12 @@ void FrenetTransform::generatePaths()
     plotTransformedPaths();
 }
 
-void FrenetTransform::transformPaths(const uint32_t & idxGlobal, const double & s_total)
-{
-    m_transformedPaths.resize(m_pathList.size());
-    
-    double dist = 0;
-    for (uint32_t i = idxGlobal; m_global_plan.size(); i++) {
-        if (i != 0) {
-            dist += sqrt((m_global_plan[i].pose.position.x - m_global_plan[i - 1].pose.position.x) * 
-                         (m_global_plan[i].pose.position.x - m_global_plan[i - 1].pose.position.x) +
-                         (m_global_plan[i].pose.position.y - m_global_plan[i - 1].pose.position.y) * 
-                         (m_global_plan[i].pose.position.y - m_global_plan[i - 1].pose.position.y));
-        }
-        
-        
-        if (dist > s_total)
-            break;
-        
-        Point2d dir(m_global_plan[i + m_idxForTangent].pose.position.x - m_global_plan[i].pose.position.x,
-                    m_global_plan[i + m_idxForTangent].pose.position.y - m_global_plan[i].pose.position.y);
-
-        Point2d normal(-dir.y, dir.x);
-        normal.normalize();
-        uint32_t index = round(dist / m_pathResolution);
-            
-        for (uint32_t j = 0; j < m_transformedPaths.size(); j++) {
-//             if (i == 0) {
-//                 TODO: Reservar tamaño para Trajectory
-//             }
-            
-            if (index > m_pathList[j].size() - 1)
-                break;
-            
-            m_transformedPaths[j].addPoint(m_global_plan[i].pose.position.x  + m_pathList[j][index] * normal.x,
-                                           m_global_plan[i].pose.position.y  + m_pathList[j][index] * normal.y,
-                                           0.0f);
-            
-        }
-    }
-}
-
-
 inline
-void FrenetTransform::generatePath(const double& qf, const double& s_total, const double& si, 
-                                   const double& sf, const double& qi, const double& theta,
+void FrenetTransform::generatePath(const double& qf, const double& si, 
+                                   const double& qi, const double& theta,
                                    std::vector <double> & q)
 {
-    double x = sf - si;
+    double x = m_sf - si;
     double x2 = x * x;
     double x3 = x2 * x;
     
@@ -146,16 +139,16 @@ void FrenetTransform::generatePath(const double& qf, const double& s_total, cons
     
     Eigen::MatrixXf X = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(B);
     
-    q.resize(ceil(s_total / m_pathResolution), (float)qf);
+    q.resize(ceil(m_sTotal / m_pathResolution), (float)qf);
     
-    std::vector <double> dq(ceil(s_total / m_pathResolution), 0.0f);
-    std::vector <double> d2q(ceil(s_total / m_pathResolution), 0.0f);
+    std::vector <double> dq(ceil(m_sTotal / m_pathResolution), 0.0f);
+    std::vector <double> d2q(ceil(m_sTotal / m_pathResolution), 0.0f);
     
     {
         double s = 0;
         for (uint32_t i = 0; i < q.size(); i++, s += m_pathResolution) {
             
-            if (s <= sf) {
+            if (s <= m_sf) {
                 x = s - si;
                 x2 = x * x;
                 x3 = x2 * x;
@@ -167,6 +160,45 @@ void FrenetTransform::generatePath(const double& qf, const double& s_total, cons
     }
 }
 
+void FrenetTransform::transformPaths(const uint32_t & idxGlobal)
+{
+    m_transformedPaths.resize(m_pathList.size());
+    
+    double dist = 0;
+    for (uint32_t i = idxGlobal; m_global_plan.size(); i++) {
+        if (i != 0) {
+            dist += sqrt((m_global_plan[i].pose.position.x - m_global_plan[i - 1].pose.position.x) * 
+            (m_global_plan[i].pose.position.x - m_global_plan[i - 1].pose.position.x) +
+            (m_global_plan[i].pose.position.y - m_global_plan[i - 1].pose.position.y) * 
+            (m_global_plan[i].pose.position.y - m_global_plan[i - 1].pose.position.y));
+        }
+        
+        
+        if (dist > m_sTotal)
+            break;
+        
+        Point2d dir(m_global_plan[i + m_idxForTangent].pose.position.x - m_global_plan[i].pose.position.x,
+                    m_global_plan[i + m_idxForTangent].pose.position.y - m_global_plan[i].pose.position.y);
+        
+        Point2d normal(-dir.y, dir.x);
+        normal.normalize();
+        uint32_t index = round(dist / m_pathResolution);
+        
+        for (uint32_t j = 0; j < m_transformedPaths.size(); j++) {
+            //             if (i == 0) {
+            //                 TODO: Reservar tamaño para Trajectory
+            //             }
+            
+            if (index > m_pathList[j].size() - 1)
+                break;
+            
+            m_transformedPaths[j].addPoint(m_global_plan[i].pose.position.x  + m_pathList[j][index] * normal.x,
+                                           m_global_plan[i].pose.position.y  + m_pathList[j][index] * normal.y,
+                                           0.0f);
+            
+        }
+    }
+}
 
 
 void FrenetTransform::setGlobalPlan(const std::vector< geometry_msgs::PoseStamped >& global_plan)

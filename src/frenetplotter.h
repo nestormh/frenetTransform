@@ -21,6 +21,7 @@
 #include <string>
 
 #include "discpp.h"
+#include "frenettransform.h"
 
 #include <vector>
 #include <math.h>
@@ -28,21 +29,6 @@
 using namespace std;
 
 namespace frenet_transform {
-    
-class Point2d {
-public:
-    Point2d(double x = 0, double y = 0): 
-                x(x), y(y) {}
-    
-    double norm() { return sqrt(x * x + y * y); }
-    double normalize() {  
-        const double module = norm();
-        x /= module;
-        y /= module;
-    }
-    
-    double x, y;
-};
 
 class FrenetPlotter
 {
